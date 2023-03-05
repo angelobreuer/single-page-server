@@ -16,16 +16,13 @@ provider.Mappings[".m3u8"] = "audio/x-mpegurl";
 app.UseStatusCodePages();
 app.UseResponseCaching();
 app.UseResponseCompression();
+app.UseDefaultFiles();
 
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = provider,
     ServeUnknownFileTypes = true,
     HttpsCompression = HttpsCompressionMode.Compress,
-
 });
-
-
-app.MapFallbackToFile("index.html");
 
 app.Run();
