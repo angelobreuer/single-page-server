@@ -9,9 +9,21 @@ builder.Services.AddResponseCompression();
 
 var app = builder.Build();
 
+var configuration = app.Configuration.GetSection("Server");
 var provider = new FileExtensionContentTypeProvider();
-provider.Mappings.Remove(".m3u8");
-provider.Mappings[".m3u8"] = "audio/x-mpegurl";
+
+var fallbackFile = configuration.GetValue<string?>("FallbackFile");
+var mimeTypeMappings = configuration.GetSection("MimeTypes");
+
+foreach (var (fileExtension, mimeType) in mimeTypeMappings.AsEnumerable())
+{
+    provider.Mappings.Remove(fileExtension);
+
+    if (mimeType is not null)
+    {
+        provider.Mappings[fileExtension] = mimeType;
+    }
+}
 
 app.UseStatusCodePages();
 app.UseResponseCaching();
@@ -24,5 +36,10 @@ app.UseStaticFiles(new StaticFileOptions
     ServeUnknownFileTypes = true,
     HttpsCompression = HttpsCompressionMode.Compress,
 });
+
+if (fallbackFile is not null)
+{
+    app.MapFallbackToFile(fallbackFile);
+}
 
 app.Run();
