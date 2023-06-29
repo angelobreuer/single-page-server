@@ -10,10 +10,9 @@ builder.Services.AddResponseCompression();
 var app = builder.Build();
 
 var configuration = app.Configuration.GetSection("Server");
-var provider = new FileExtensionContentTypeProvider();
-
-var fallbackFile = configuration.GetValue<string?>("FallbackFile");
 var mimeTypeMappings = configuration.GetSection("MimeTypes");
+
+var provider = new FileExtensionContentTypeProvider();
 
 foreach (var (fileExtension, mimeType) in mimeTypeMappings.AsEnumerable())
 {
@@ -25,9 +24,9 @@ foreach (var (fileExtension, mimeType) in mimeTypeMappings.AsEnumerable())
     }
 }
 
-app.UseStatusCodePages();
 app.UseResponseCaching();
 app.UseResponseCompression();
+
 app.UseDefaultFiles();
 
 app.UseStaticFiles(new StaticFileOptions
@@ -37,9 +36,6 @@ app.UseStaticFiles(new StaticFileOptions
     HttpsCompression = HttpsCompressionMode.Compress,
 });
 
-if (fallbackFile is not null)
-{
-    app.MapFallbackToFile(fallbackFile);
-}
+app.UseStatusCodePages();
 
 app.Run();
